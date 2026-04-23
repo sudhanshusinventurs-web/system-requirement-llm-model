@@ -8,12 +8,12 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 
-# ---------------- LOGGING ---------------- #
+# logging setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# ---------------- STATE ---------------- #
+# state definition
 class AgentState(TypedDict):
     current_section: str
     sections: List[str]
@@ -23,7 +23,7 @@ class AgentState(TypedDict):
     completed: bool
 
 
-# ---------------- LLM ---------------- #
+# llm setup
 def get_llm():
     api_key = os.getenv("GOOGLE_API_KEY")
 
@@ -50,7 +50,7 @@ def safe_llm_call(prompt: str) -> str:
         raise
 
 
-# ---------------- PROMPTS ---------------- #
+# prompts
 def question_prompt(section, context):
     return f"""
 You are a senior system analyst.
@@ -103,8 +103,7 @@ Document:
 {json.dumps(document, indent=2)}
 """
 
-
-# ---------------- NODES ---------------- #
+# nodes
 def ask_question(state: AgentState):
     prompt = question_prompt(state["current_section"], state["document"])
     response = safe_llm_call(prompt)
@@ -150,7 +149,7 @@ def validate_document(state: AgentState):
     return state
 
 
-# ---------------- GRAPH ---------------- #
+# graph construction
 def build_graph():
     graph = StateGraph(AgentState)
 
@@ -176,7 +175,7 @@ def build_graph():
     return graph.compile()
 
 
-# ---------------- STORAGE ---------------- #
+# memory store
 class MemoryStore:
     def __init__(self, filepath="state.json"):
         self.filepath = filepath
@@ -198,7 +197,7 @@ class MemoryStore:
             return None
 
 
-# ---------------- OUTPUT ---------------- #
+# output generation
 def generate_markdown(document, messages):
     md = "# Requirements Document\n\n"
 
@@ -211,7 +210,7 @@ def generate_markdown(document, messages):
     return md
 
 
-# ---------------- MAIN ---------------- #
+# main execution
 def main():
     sections = [
         "Project Overview",
